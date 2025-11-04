@@ -132,12 +132,22 @@ A depender de qual das medidas adotadas, podemos chegar em números diferentes d
 
 ::::: columns
 ::: {.column width="20%"}
-**Top 100 municípios**: com maior e menor número de migrantes.
+**Top 50 municípios**: maior número de migrantes.
 :::
 
 ::: {.column width="80%"}
-![](img/mig_datafixa_uf.png){fig-align="center" width="100%" height="100%"}
+![](img/mig_munic_maiores.png){fig-align="center" width="100%" height="100%"}
 :::
 :::::
 
+## Migrantes por municípios
 
+::::: columns
+::: {.column width="20%"}
+**Top 50 municípios**: menor número de migrantes.
+:::
+
+::: {.column width="80%"}
+![](img/mig_munic_menores.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::

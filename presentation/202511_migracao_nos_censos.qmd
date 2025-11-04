@@ -1,0 +1,143 @@
+---
+title: "Migração nos Censos"
+subtitle: "<span style='font-size:1.5em;'> Perspectivas para abordar a sua relação com raça</span>"
+author: "TCA"
+date: today
+date-format: long
+footer: ""
+#logo: "cebrap-imagem.png"
+code-link: true
+format:
+  revealjs:
+    theme: "simple"
+    math: mathjax
+    scrollable: true
+    # standalone: true
+    # embed-resources: true
+    transition: fade
+    background-transition: fade
+    highlight-style: ayu-mirage
+    slide-number: "c"
+    controls-layout: bottom-right
+    fig-cap-location: top
+    # fig-format: svg
+    pdf-separate-fragments: false
+    # fig-align: center
+editor: visual
+execute:
+  freeze: auto
+  echo: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r,echo=FALSE}
+
+options(scipen = 99999)
+knitr::opts_chunk$set(echo=FALSE, error=FALSE, warning=FALSE, message=FALSE)
+
+
+```
+
+## Estrutura
+
+- Breve retomada das formas de cálculo de migração a partir de dados censitários
+
+- Alguns dados sobre tendências recentes
+
+- Parâmetros para começar a pensar uma abordagem municipal
+
+# Formas de cálculo da migração via Censo
+
+## Quesitos
+
+Podemos calcular a migração a partir de diferentes quesitos:
+
+- **Lugar de nascimento**: dá informações sobre naturalidade.
+
+- **Duração da residência (DUR)**: dá informações sobre tempo que reside no atual local.
+
+- **Lugar de última residência (LUR)**: nos diz o local em que residia antes.
+
+- **Lugar de residência em uma data fixa anterior (DFIX)**: estabelece um tempo e local que residiu antes.
+
+## Tipos de migração que podemos calcular
+
+Podemos obter três tipos de informações sobre migração:
+
+- **Lugar de nascimento**: dá informações sobre naturalidade.
+
+- **Última etapa**: DUR + LUR. Capta última etapa migratória e tempo desde que ocorreu.
+
+- **Data fixa (DFIX)**: Capta etapa migratória em um tempo fixo no tempo em que ocorreu.
+
+
+## Complexidade do seu uso
+
+A depender de qual das medidas adotadas, podemos chegar em números diferentes de migrantes, porque mudamos a noção de quem é migrante.
+
+# Alguns dados
+
+## Migração de última etapa
+
+::::: columns
+::: {.column width="20%"}
+**Segundo município que viveu**: dados de 2022, agregado por sexo.
+:::
+
+::: {.column width="80%"}
+![](img/mig_ultimaetapa_munic.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::
+
+## Migração Data Fixa
+
+::::: columns
+::: {.column width="20%"}
+**Internacional**: segundo o local de residência 5 anos antes.
+:::
+
+::: {.column width="80%"}
+![](img/mig_datafixa_internacional.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::
+
+## Migração Data Fixa
+
+::::: columns
+::: {.column width="20%"}
+**Municipal**: segundo o local de residência 5 anos antes.
+:::
+
+::: {.column width="80%"}
+![](img/mig_datafixa_munic.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::
+
+## Migração Data Fixa
+
+::::: columns
+::: {.column width="20%"}
+**Estadual**: exemplo de como trabalhamos para criar as matrizes.
+:::
+
+::: {.column width="80%"}
+![](img/mig_datafixa_uf.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::
+
+# Alguns parâmetros para pensar nossa abordagem
+
+## Migrantes por municípios
+
+::::: columns
+::: {.column width="20%"}
+**Top 100 municípios**: com maior e menor número de migrantes.
+:::
+
+::: {.column width="80%"}
+![](img/mig_datafixa_uf.png){fig-align="center" width="100%" height="100%"}
+:::
+:::::
+
+

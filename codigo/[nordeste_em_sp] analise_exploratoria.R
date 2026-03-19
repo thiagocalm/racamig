@@ -81,6 +81,7 @@ df <- df |>
     cod_fix_reg = str_sub(cod_fix_uf,0,1)
   )
 
+
 df <- df |>
   mutate(
     ind_mig_ult = case_when(ind_ult_tipo == 1 ~ 1, TRUE ~ 0),
@@ -102,3 +103,129 @@ df |>
     prop_ult_ne = N_ult_ne / N_ult,
     prop_fix_ne = N_fix_ne / N_fix
   )
+
+# transformando variaveis em numericas
+
+df <- df |>
+  mutate(across(8:37, ~ as.numeric(.x)))
+
+# analises ----------------------------------------------------------------
+
+###
+# 1. Numero de migrantes segundo forma de captacao
+###
+
+t1 <- df |>
+  summarise(
+    N_ult = sum(peso[ind_mig_ult == 1]),
+    N_fix = sum(peso [ind_mig_fix == 1]),
+    N_ult_ne = sum(peso [ind_mig_ult_ne == 1]),
+    N_fix_ne = sum(peso [ind_mig_fix_ne == 1])
+  ) |>
+  mutate(
+    prop_ult_ne = N_ult_ne / N_ult,
+    prop_fix_ne = N_fix_ne / N_fix,
+    sexo = "Total"
+  ) |>
+  bind_rows(
+    df |>
+      summarise(
+        N_ult = sum(peso[ind_mig_ult == 1]),
+        N_fix = sum(peso [ind_mig_fix == 1]),
+        N_ult_ne = sum(peso [ind_mig_ult_ne == 1]),
+        N_fix_ne = sum(peso [ind_mig_fix_ne == 1]),
+        .by = sexo
+      ) |>
+      mutate(
+        prop_ult_ne = N_ult_ne / N_ult,
+        prop_fix_ne = N_fix_ne / N_fix,
+        sexo = factor(sexo, levels = c(1,2), labels = c("Mulheres","Homens"))
+      )
+  ) |>
+  select(sexo, everything())
+
+t1
+
+###
+# 2. Distribuicao por raca segundo status migratorio
+###
+
+t2 <- df |>
+  filter(raca != 9) |>
+  summarise(
+    N_ult = sum(peso[ind_mig_ult == 1]),
+    N_fix = sum(peso [ind_mig_fix == 1]),
+    N_ult_ne = sum(peso [ind_mig_ult_ne == 1]),
+    N_fix_ne = sum(peso [ind_mig_fix_ne == 1]),
+    .by = c(raca)
+  ) |>
+  mutate(
+    prop_ult_ne = N_ult_ne / N_ult,
+    prop_fix_ne = N_fix_ne / N_fix,
+    perc_ult = N_ult / sum(N_ult),
+    perc_fix = N_fix / sum(N_fix),
+    perc_ult_ne = N_ult_ne / sum(N_ult_ne),
+    perc_fix_ne = N_fix_ne / sum(N_fix_ne),
+    raca = factor(
+      raca,
+      levels = c(1,2,3,4,5),
+      labels = c("Branca","Preta","Amarela","Parda","Indigena")
+    )
+  )
+
+t2
+
+###
+# 3. Distribuicao dos migrantes de ultima etapa segundo tempo desde migracao
+###
+
+t3 <- df |>
+  filter(! is.na(dur_mun)) |>
+  mutate(
+    dur_mun = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
+  ) |>
+  summarise(
+    N = sum(peso[ind_mig_ult == 1]),
+    .by = c(dur_mun)
+  ) |>
+  arrange(dur_mun) |>
+  mutate(
+    perc = N / sum(N)
+  )
+
+t3
+
+###
+# 4. Distribuicao dos migrantes de ultima etapa segundo tempo desde migracao e raca
+###
+
+t4 <- df |>
+  filter(
+    !is.na(dur_mun),
+    raca != 9
+  ) |>
+  mutate(
+    dur_mun = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
+  ) |>
+  summarise(
+    N = sum(peso[ind_mig_ult == 1]),
+    .by = c(raca, dur_mun)
+  ) |>
+  arrange(dur_mun) |>
+  mutate(
+    perc = N / sum(N),
+    .by = raca
+  ) |>
+  mutate(
+    raca = factor(
+      raca,
+      levels = c(1,2,3,4,5),
+      labels = c("Branca","Preta","Amarela","Parda","Indigena")
+    )
+  )
+
+t4 |>
+  ggplot() +
+  aes(x = dur_mun, y = perc, color = raca) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 5, alpha = .5)

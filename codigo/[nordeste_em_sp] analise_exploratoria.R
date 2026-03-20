@@ -2,7 +2,7 @@
 #'@projeto RacaMigRaca - migrantes em rmsp e a composicao racial
 #'@coordenacao Thiago Cordeiro-Almeida e Leonardo Silveira
 #'@script Thiago Cordeiro Almeida (CED/Espanha)
-#'@ultima-atualizacao 2026-03-18
+#'@ultima-atualizacao 2026-03-20
 #'@dados Censo demográfico 2010
 #'@script Importacao e tratamento das variaveis para explorar números dos censos 2010
 #'---------------------------------------------------------
@@ -38,14 +38,43 @@ df <- censobr::read_population(2010,as_data_frame = TRUE, columns = vars)
 
 # reduzindo base para otimizar analises -----------------------------------
 
+# criando base de dados reduzida para NE
+
+df_ne <- df |>
+  filter(code_region == 2) |>
+  slice_sample(prop = 0.1)
+
+# selecionando dados para RMSP
+
 df <- df |>
-  filter(V1004 == 20) # restricao para RMSP
+  # restricao para RMSP
+  filter(V1004 == 20)
 
 invisible(gc())
 
 # renomeando variaveis ----------------------------------------------------
 
 df <- df |>
+  rename(
+    peso = V1001,
+    ordem = V0504,
+    sexo = V0601,
+    idade = V6036,
+    raca = V0606,
+    ind_nasc_mun = V0618,
+    ind_nasc_uf = V0619,
+    cod_nasc_uf = V0622,
+    dur_mun = V0624,
+    dur_uf = V0623,
+    ind_ult_tipo = V0625,
+    cod_ult_uf = V6252,
+    cod_ult_mun = V6254,
+    ind_fix_tipo = V0626,
+    cod_fix_uf = V6262,
+    cod_fix_mun = V6264
+  )
+
+df_ne <- df_ne |>
   rename(
     peso = V1001,
     ordem = V0504,
@@ -81,7 +110,7 @@ df <- df |>
     cod_fix_reg = str_sub(cod_fix_uf,0,1)
   )
 
-
+# criando variaveis de identificacao de imigrantes segundo diferentes criterios
 df <- df |>
   mutate(
     ind_mig_ult = case_when(ind_ult_tipo == 1 ~ 1, TRUE ~ 0),
@@ -108,6 +137,9 @@ df |>
 
 df <- df |>
   mutate(across(8:37, ~ as.numeric(.x)))
+
+df_ne <- df_ne |>
+  mutate(across(8:31, ~ as.numeric(.x)))
 
 # analises ----------------------------------------------------------------
 
@@ -229,3 +261,56 @@ t4 |>
   aes(x = dur_mun, y = perc, color = raca) +
   geom_line(linewidth = 1.1) +
   geom_point(size = 5, alpha = .5)
+
+###
+# 5. Distribuicao dos migrantes de ultima etapa nordestinos e nativos por raca
+###
+
+t5 <- df |>
+  filter(raca != 9) |>
+  summarise(
+    N = sum(peso),
+    .by = c(ind_mig_ult_ne, raca)
+  ) |>
+  mutate(
+    perc = N / sum(N),
+    .by = ind_mig_ult_ne
+  ) |>
+  mutate(
+    ind_mig_ult_ne = factor(
+      ind_mig_ult_ne,
+      levels = c(0,1),
+      labels = c("Residentes - RMSP","Imigrantes Nordestinos - RMSP")
+    ),
+    raca = factor(
+      raca,
+      levels = c(1,2,3,4,5),
+      labels = c("Branca","Preta","Amarela","Parda","Indigena")
+    )
+  ) |>
+  bind_rows(
+    df_ne |>
+      filter(raca != 9) |>
+      summarise(
+        N = sum(peso),
+        .by = c(raca)
+      ) |>
+      mutate(
+        perc = N / sum(N)
+      ) |>
+      mutate(
+        ind_mig_ult_ne = "Residentes - Nordeste",
+        raca = factor(
+          raca,
+          levels = c(1,2,3,4,5),
+          labels = c("Branca","Preta","Amarela","Parda","Indigena")
+        )
+      ) |>
+      select(ind_mig_ult_ne, everything())
+  ) |> arrange(ind_mig_ult_ne, raca)
+
+t5
+
+###
+# 6.
+###

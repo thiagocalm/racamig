@@ -217,7 +217,7 @@ t3 <- df |>
     dur_mun = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
   ) |>
   summarise(
-    N = sum(peso[ind_mig_ult == 1]),
+    N = sum(peso[ind_mig_ult_ne == 1]),
     .by = c(dur_mun)
   ) |>
   arrange(dur_mun) |>
@@ -228,7 +228,7 @@ t3 <- df |>
 t3
 
 ###
-# 4. Distribuicao dos migrantes de ultima etapa segundo tempo desde migracao e raca
+# 4. Distribuicao dos migrantes de ultima etapa nordestinos segundo tempo desde migracao e raca
 ###
 
 t4 <- df |>
@@ -240,7 +240,7 @@ t4 <- df |>
     dur_mun = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
   ) |>
   summarise(
-    N = sum(peso[ind_mig_ult == 1]),
+    N = sum(peso[ind_mig_ult_ne == 1]),
     .by = c(raca, dur_mun)
   ) |>
   arrange(dur_mun) |>
@@ -312,5 +312,46 @@ t5 <- df |>
 t5
 
 ###
-# 6.
+# 6. Distribuicao racial dos imigrantes nordestinos em RMSP por tempo de residencia
 ###
+
+t6 <- df |>
+  filter(
+    !is.na(dur_mun),
+    raca != 9
+  ) |>
+  mutate(
+    dur_mun_cat = case_when(
+      dur_mun %in% 0:2 ~ 1,
+      dur_mun %in% 3:5 ~ 2,
+      dur_mun >= 6 ~ 3
+    )
+  ) |>
+  summarise(
+    N = sum(peso[ind_mig_ult_ne == 1]),
+    .by = c(dur_mun_cat, raca)
+  ) |>
+  arrange(dur_mun_cat, raca) |>
+  mutate(
+    perc = N / sum(N),
+    .by = dur_mun_cat
+  ) |>
+  mutate(
+    dur_mun_cat = factor(
+      dur_mun_cat,
+      levels = c(1,2,3),
+      labels = c("0-2","3-5","6+")
+    ),
+    raca = factor(
+      raca,
+      levels = c(1,2,3,4,5),
+      labels = c("Branca","Preta","Amarela","Parda","Indigena")
+    )
+  )
+
+t6
+
+
+# exportar tabelas --------------------------------------------------------
+
+

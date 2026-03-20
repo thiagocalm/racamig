@@ -195,7 +195,7 @@ tabelas[[4]] |>
 
 ::::: columns
 ::: {.column width="20%"}
-**Composição racial:** na origem, destino e do grupo em movimento
+**Composição racial:** na origem, no destino e do grupo em movimento
 :::
 
 ::: {.column width="80%"}

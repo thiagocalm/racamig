@@ -1,0 +1,262 @@
+---
+title: "Imigrantes do NE na RMSP"
+subtitle: "<span style='font-size:1.5em;'> Panorama racial via Censo 2010</span>"
+author: "TCA"
+date: today
+date-format: long
+footer: ""
+#logo: "cebrap-imagem.png"
+code-link: true
+format:
+  revealjs:
+    theme: "simple"
+    math: mathjax
+    scrollable: true
+    # standalone: true
+    # embed-resources: true
+    transition: fade
+    background-transition: fade
+    highlight-style: ayu-mirage
+    slide-number: "c"
+    controls-layout: bottom-right
+    fig-cap-location: top
+    # fig-format: svg
+    pdf-separate-fragments: false
+    # fig-align: center
+editor: visual
+execute:
+  freeze: auto
+  echo: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r,echo=FALSE}
+
+options(scipen = 99999)
+knitr::opts_chunk$set(echo=FALSE, error=FALSE, warning=FALSE, message=FALSE)
+
+# pacotes
+library(pacman)
+p_load(kable,kableExtra,tidyverse)
+
+# importacao de dados
+
+load(file.path("../output","ne_em_rmsp","descritivas.RData"))
+
+```
+
+## Ideia das descritivas
+
+**RQ**: Há diferenças na composição racial dos imigrantes nordestinos residentes na RMSP e como esta composição mudou ao longo do tempo?
+
+-   Breve retomada das formas de cálculo de migração a partir de dados censitários
+
+-   Perfil racial dos imigrantes na RMSP em 2010
+
+-   Padrões da composição racial dos imigrantes nordestinos em 2010
+
+# Formas de cálculo da migração via Censo
+
+## Quesitos
+
+Podemos calcular a migração a partir de diferentes quesitos:
+
+-   **Lugar de nascimento**: dá informações sobre naturalidade.
+
+-   **Duração da residência (DUR)**: dá informações sobre tempo que reside no atual local.
+
+-   **Lugar de última residência (LUR)**: nos diz o local em que residia antes.
+
+-   **Lugar de residência em uma data fixa anterior (DFIX)**: estabelece um tempo e local que residiu antes.
+
+## Tipos de migração que podemos calcular
+
+Podemos obter três tipos de informações sobre migração:
+
+-   **Lugar de nascimento**: dá informações sobre naturalidade.
+
+-   **Última etapa**: DUR + LUR. Capta última etapa migratória e tempo desde que ocorreu.
+
+-   **Data fixa (DFIX)**: Capta etapa migratória em um tempo fixo no tempo em que ocorreu.
+
+# Perfil racial dos imigrantes na RMSP em 2010
+
+## Distribuicao dos imigrantes segundo forma de captação
+
+```{r}
+
+tabelas[[1]] |> 
+  rename(
+    "ULT" = N_ult,
+    "DFIX" = N_fix,
+    "ULT_NE" = N_ult_ne,
+    "DFIX_NE" = N_fix_ne,
+    "Prop_ULT_NE" = prop_ult_ne,
+    "Prop_DFIX_NE" = prop_fix_ne
+  ) |> 
+  pivot_longer(
+    cols = 2:7,
+    names_to = "Indicador",
+    values_to = "value"
+  ) |> 
+  pivot_wider(
+    names_from = sexo,
+    values_from = value
+  ) |> 
+  mutate(across(2:4, ~ round(.x,2))) |> 
+  kable() |> 
+  kable_styling(full_width = F, font_size = 30)
+```
+
+## Distribuição racial dos imigrantes segundo forma de captação
+
+```{r}
+tabelas[[2]] |> 
+  select(raca, N_ult_ne, N_fix_ne, perc_ult_ne, perc_fix_ne) |> 
+  rename(
+    "ULT_NE" = N_ult_ne,
+    "DFIX_NE" = N_fix_ne,
+    "Pct_ULT_NE" = perc_ult_ne,
+    "Pct_DFIX_NE" = perc_fix_ne
+  ) |> 
+  mutate(
+    Pct_ULT_NE = round(Pct_ULT_NE * 100,2),
+    Pct_DFIX_NE = round(Pct_DFIX_NE * 100,2),
+  ) |>  
+  kable() |> 
+  kable_styling(full_width = F, font_size = 30)
+```
+
+## Distribuição dos imigrantes NE de última etapa (1)
+
+::::: columns
+::: {.column width="20%"}
+**Distribuição por tempo de residência no destino** 
+:::
+
+::: {.column width="80%"}
+```{r}
+tabelas[[3]] |>
+  mutate(
+    perc = round(perc * 100,2),
+    cum_perc = cumsum(perc)
+  ) |> 
+  rename(
+    "Tempo (anos)" = dur_mun,
+    "N" = N,
+    "%" = perc,
+    "Cumulativo (%)" = cum_perc
+  ) |>  
+  kable() |> 
+  kable_styling(full_width = F, font_size = 24)
+```
+
+:::
+:::::
+
+## Distribuição dos imigrantes NE de última etapa (2)
+
+::::: columns
+::: {.column width="20%"}
+**Imigrantes de última etapa:** distribuição por tempo de residência no destino e raça
+:::
+
+::: {.column width="80%"}
+```{r}
+tabelas[[4]] |>
+  mutate(
+    perc = round(perc * 100,2)
+  ) |> 
+  ggplot() +
+  aes(x = dur_mun, y = perc, color = raca) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 5, alpha = .5) +
+  labs(
+    color = "",
+    x = "Tempo de residência no destino (anos)",
+    y = "Distribuição (%)"
+  ) +
+  scale_x_continuous(breaks = seq(0,10,1L)) +
+  theme_light() +
+  scale_color_brewer(palette = "Set2") +
+  theme(
+    legend.position = "top",
+    axis.title = element_text(face = "bold", hjust = 1)
+  )
+```
+
+:::
+:::::
+
+# Padrões da composição racial dos imigrantes nordestinos em 2010
+
+## Há diferenciais na composição racial dos imigrantes nordestinos?
+
+::::: columns
+::: {.column width="20%"}
+**Composição racial:** na origem, destino e do grupo em movimento
+:::
+
+::: {.column width="80%"}
+```{r}
+tabelas[[5]] |>
+  mutate(
+    perc = round(perc * 100,2)
+  ) |> 
+  ggplot() +
+  aes(x = ind_mig_ult_ne, y = perc, fill = raca) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    fill = "",
+    x = "",
+    y = "Distribuição (%)"
+  ) +
+  theme_light() +
+  scale_fill_brewer(palette = "Set2") +
+  theme(
+    legend.position = "top",
+    axis.title = element_text(face = "bold", hjust = 1)
+  )
+```
+
+:::
+:::::
+
+## Como a composição racial mudou ao longo do tempo?
+
+::::: columns
+::: {.column width="20%"}
+**Composição racial:** segundo tempo de residência na RMSP**
+:::
+
+::: {.column width="80%"}
+```{r}
+tabelas[[6]] |>
+  mutate(
+    perc = round(perc * 100,2)
+  ) |> 
+  ggplot() +
+  aes(x = dur_mun_cat, y = perc, fill = raca) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    fill = "",
+    x = "Tempo (anos)",
+    y = "Distribuição (%)"
+  ) +
+  theme_light() +
+  scale_fill_brewer(palette = "Set2") +
+  theme(
+    legend.position = "top",
+    axis.title = element_text(face = "bold", hjust = 1)
+  )
+```
+
+:::
+:::::
+
+## Próximos passos?
+
+

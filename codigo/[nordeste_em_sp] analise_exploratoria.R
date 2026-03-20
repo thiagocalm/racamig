@@ -354,4 +354,6 @@ t6
 
 # exportar tabelas --------------------------------------------------------
 
+tabelas <- list(t1,t2,t3,t4,t5,t6)
 
+save(tabelas,file = file.path("./output","ne_em_rmsp","descritivas.RData"))

@@ -2,9 +2,12 @@
 #'@projeto RacaMigRaca - migrantes em rmsp e a composicao racial
 #'@coordenacao Thiago Cordeiro-Almeida e Leonardo Silveira
 #'@script Thiago Cordeiro Almeida (CED/Espanha)
-#'@ultima-atualizacao 2026-03-20
+#'@ultima-atualizacao 2026-06-24
 #'@dados Censo demográfico 2010
 #'@script Importacao e tratamento das variaveis para explorar números dos censos 2010
+#'@desc-ultima-atualizacao
+#'Desagregacao de analises por tempo de residencia
+#'Inclusao de outras categorias na desagregacao
 #'---------------------------------------------------------
 
 # configuracoes gerais ----------------------------------------------------
@@ -56,7 +59,7 @@ invisible(gc())
 
 df <- df |>
   rename(
-    peso = V1001,
+    peso = V0010,
     ordem = V0504,
     sexo = V0601,
     idade = V6036,
@@ -76,7 +79,7 @@ df <- df |>
 
 df_ne <- df_ne |>
   rename(
-    peso = V1001,
+    peso = V0010,
     ordem = V0504,
     sexo = V0601,
     idade = V6036,
@@ -149,6 +152,7 @@ df_ne <- df_ne |>
 
 t1 <- df |>
   summarise(
+    pop_total = sum(peso),
     N_ult = sum(peso[ind_mig_ult == 1]),
     N_fix = sum(peso [ind_mig_fix == 1]),
     N_ult_ne = sum(peso [ind_mig_ult_ne == 1]),
@@ -162,6 +166,7 @@ t1 <- df |>
   bind_rows(
     df |>
       summarise(
+        pop_total = sum(peso),
         N_ult = sum(peso[ind_mig_ult == 1]),
         N_fix = sum(peso [ind_mig_fix == 1]),
         N_ult_ne = sum(peso [ind_mig_ult_ne == 1]),
@@ -212,15 +217,15 @@ t2
 ###
 
 t3 <- df |>
-  filter(! is.na(dur_mun)) |>
-  mutate(
-    dur_mun = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
-  ) |>
+  filter(! is.na(dur_uf)) |>
+  # mutate(
+  #   dur_uf = case_when(dur_uf >= 10 ~ 10, TRUE ~ dur_uf)
+  # ) |>
   summarise(
     N = sum(peso[ind_mig_ult_ne == 1]),
-    .by = c(dur_mun)
+    .by = c(dur_uf)
   ) |>
-  arrange(dur_mun) |>
+  arrange(dur_uf) |>
   mutate(
     perc = N / sum(N)
   )
@@ -321,11 +326,12 @@ t6 <- df |>
     raca != 9
   ) |>
   mutate(
-    dur_mun_cat = case_when(
-      dur_mun %in% 0:2 ~ 1,
-      dur_mun %in% 3:5 ~ 2,
-      dur_mun >= 6 ~ 3
-    )
+    # dur_mun_cat = case_when(
+    #   dur_mun %in% 0:2 ~ 1,
+    #   dur_mun %in% 3:5 ~ 2,
+    #   dur_mun >= 6 ~ 3
+    # )
+    dur_mun_cat = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
   ) |>
   summarise(
     N = sum(peso[ind_mig_ult_ne == 1]),
@@ -337,11 +343,11 @@ t6 <- df |>
     .by = dur_mun_cat
   ) |>
   mutate(
-    dur_mun_cat = factor(
-      dur_mun_cat,
-      levels = c(1,2,3),
-      labels = c("0-2","3-5","6+")
-    ),
+    # dur_mun_cat = factor(
+    #   dur_mun_cat,
+    #   levels = c(1,2,3),
+    #   labels = c("0-2","3-5","6+")
+    # ),
     raca = factor(
       raca,
       levels = c(1,2,3,4,5),
@@ -352,8 +358,78 @@ t6 <- df |>
 t6
 
 
+# Hipotese da acimatacao classificatoria ----------------------------------
+# Razao de grupos raciais = imigrantes / origem ou destino
+
+t7 <- df |>
+  filter(
+    !is.na(dur_mun),
+    raca != 9
+  ) |>
+  mutate(
+    dur_mun_cat = case_when(dur_mun >= 10 ~ 10, TRUE ~ dur_mun)
+  ) |>
+  summarise(
+    N = sum(peso[ind_mig_ult_ne == 1]),
+    .by = c(dur_mun_cat, raca)
+  ) |>
+  arrange(dur_mun_cat, raca) |>
+  mutate(
+    perc = N / sum(N),
+    .by = dur_mun_cat
+  ) |>
+  # join do destino
+  left_join(
+    df |>
+      filter(
+        ind_mig_ult == 0,
+        raca != 9
+      ) |>
+      summarise(
+        N = sum(peso),
+        .by = c(raca)
+      ) |>
+      arrange(raca) |>
+      mutate(
+        perc_destino = N / sum(N)
+      ) |>
+      select(raca, perc_destino),
+    by = join_by (raca)
+  ) |>
+  # join origem
+  left_join(
+    df_ne |>
+      filter(
+        raca != 9
+      ) |>
+      summarise(
+        N = sum(peso),
+        .by = c(raca)
+      ) |>
+      arrange(raca) |>
+      mutate(
+        perc_origem = N / sum(N)
+      ) |>
+      select(raca, perc_origem),
+    by = join_by (raca)
+  ) |>
+  mutate(
+    raca = factor(
+      raca,
+      levels = c(1,2,3,4,5),
+      labels = c("Branca","Preta","Amarela","Parda","Indigena")
+    )
+  ) |>
+  select("dur_cat" = dur_mun_cat, raca, perc, perc_destino, perc_origem) |>
+  mutate(
+    razao_destino = perc / perc_destino,
+    razao_origem = perc / perc_origem
+  )
+
+t7
+
 # exportar tabelas --------------------------------------------------------
 
-tabelas <- list(t1,t2,t3,t4,t5,t6)
+tabelas <- list(t1,t2,t3,t4,t5,t6, t7)
 
 save(tabelas,file = file.path("./output","ne_em_rmsp","descritivas.RData"))

@@ -234,7 +234,8 @@ t3 <- df |>
   ) |>
   arrange(dur_uf) |>
   mutate(
-    perc = N / sum(N)
+    perc = N / sum(N),
+    .by = ind_destino
   ) |>
   arrange(ind_destino, dur_uf)
 
@@ -313,6 +314,7 @@ t5 <- df |>
         perc = N / sum(N)
       ) |>
       mutate(
+        ind_destino = "rmsp",
         ind_mig_ult_ne = "Residentes - Nordeste",
         raca = factor(
           raca,
@@ -320,7 +322,28 @@ t5 <- df |>
           labels = c("Branca","Preta","Amarela","Parda","Indigena")
         )
       ) |>
-      select(ind_mig_ult_ne, everything())
+      select(ind_destino,ind_mig_ult_ne, everything())
+  ) |>
+  bind_rows(
+    df_ne |>
+      filter(raca != 9) |>
+      summarise(
+        N = sum(peso),
+        .by = c(raca)
+      ) |>
+      mutate(
+        perc = N / sum(N)
+      ) |>
+      mutate(
+        ind_destino = "df",
+        ind_mig_ult_ne = "Residentes - Nordeste",
+        raca = factor(
+          raca,
+          levels = c(1,2,3,4,5),
+          labels = c("Branca","Preta","Amarela","Parda","Indigena")
+        )
+      ) |>
+      select(ind_destino,ind_mig_ult_ne, everything())
   ) |>
   arrange(ind_destino,ind_mig_ult_ne, raca)
 
@@ -389,7 +412,7 @@ t7 <- df |>
     perc = N / sum(N),
     .by = c(ind_destino,dur_mun_cat)
   ) |>
-  # join do destino
+  # join destino
   left_join(
     df |>
       filter(

@@ -425,7 +425,8 @@ t7 <- df |>
       ) |>
       arrange(raca) |>
       mutate(
-        perc_destino = N / sum(N)
+        perc_destino = N / sum(N),
+        .by = ind_destino
       ) |>
       select(ind_destino,raca, perc_destino),
     by = join_by(ind_destino,raca)

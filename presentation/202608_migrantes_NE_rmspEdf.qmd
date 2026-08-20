@@ -325,7 +325,6 @@ tabelas[[7]] |>
   )
 ```
 
-
 ## H1: Aclimatacao classificatoria - Distrito Federal
 
 ```{r}
